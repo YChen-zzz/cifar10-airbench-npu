@@ -22,6 +22,7 @@ The NPU runs use a common reference runtime with one Ascend 910C NPU:
 | torch | `2.7.1+cpu` |
 | torch_npu | `2.7.1.post2` |
 | CANN | `8.5.0` |
+| torchvision | `0.22.1`, pinned by the launchers via `AIRBENCH_TORCHVISION_PATH` |
 | Hardware | one Ascend 910C NPU (two dies) |
 | Process count | two processes, one per die |
 | Dataset | CIFAR-10, pre-cached as `train.pt` / `test.pt` under `airbench_npu/data/cifar10/` |
@@ -32,10 +33,12 @@ An Ascend 910C NPU contains two dies, so training uses two processes, one per di
 Some logs report a PyTorch version such as `2.7.1+cpu`; in the Ascend build the `+cpu`
 suffix is the package build string and does not mean the run used CPU instead of NPU.
 
-The migrated Conda environment does not ship `torchvision`, so both launchers put
-`airbench_npu/runtime_dependencies` on `PYTHONPATH`. `airbench_npu/baseline/run.sh`
-and `airbench_npu/optimized/run.sh` each write exactly one log file,
-`logs/<timestamp>.log`, containing the complete training output.
+Both launchers pin the `torchvision` build the runs used by putting it first on
+`PYTHONPATH`. The path is the `AIRBENCH_TORCHVISION_PATH` variable, defaulting to
+`/SharePath/chenyupeng/diff_model/cifar10-airbench/airbench_npu/runtime_dependencies`
+(`torchvision 0.22.1`); set it to use a different build.
+`airbench_npu/baseline/run.sh` and `airbench_npu/optimized/run.sh` each write exactly
+one log file, `logs/<timestamp>.log`, containing the complete training output.
 
 ## NPU leaderboard
 

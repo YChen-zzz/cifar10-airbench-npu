@@ -7,7 +7,8 @@ flock -n 9 || { echo 'A training is already running here.' >&2; exit 2; }
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 export LLM_TEST_ENV=/SharePath/chenyupeng/cyp-testtest/llm_test_migrated
 export PATH="$LLM_TEST_ENV/bin:/home/naie/.local/bin:$PATH"
-export PYTHONPATH="/SharePath/chenyupeng/diff_model/cifar10-airbench/airbench_npu/runtime_dependencies:${PYTHONPATH:-}"
+export AIRBENCH_TORCHVISION_PATH="${AIRBENCH_TORCHVISION_PATH:-/SharePath/chenyupeng/diff_model/cifar10-airbench/airbench_npu/runtime_dependencies}"
+export PYTHONPATH="$AIRBENCH_TORCHVISION_PATH:${PYTHONPATH:-}"
 hash -r
 export AIRBENCH_DATA_PATH="${AIRBENCH_DATA_PATH:-/SharePath/chenyupeng/diff_model/cifar10-airbench/airbench_npu/data/cifar10}"
 export AIRBENCH_RUNS="${AIRBENCH_RUNS:-20}"
