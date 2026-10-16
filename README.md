@@ -40,6 +40,19 @@ Both launchers pin the `torchvision` build the runs used by putting it first on
 `airbench_npu/baseline/run.sh` and `airbench_npu/optimized/run.sh` each write exactly
 one log file, `logs/<timestamp>.log`, containing the complete training output.
 
+Run the optimized build with:
+
+```bash
+cd airbench_npu/optimized
+AIRBENCH_RUNS=20 bash run.sh
+```
+
+`AIRBENCH_RUNS` is the number of complete sequential trainings, and the default `20`
+reproduces the leaderboard row. The launcher also accepts `AIRBENCH_DEVICES` (NPU device
+IDs, default `0,1`), `AIRBENCH_SYNCBN` (BatchNorm mode, default `local`),
+`AIRBENCH_DATA_PATH` and `AIRBENCH_TORCHVISION_PATH`. One run of this launcher writes a
+single `logs/<timestamp>.log`.
+
 ## NPU leaderboard
 
 The following table is the NPU reproduction leaderboard. For each row the source lives
