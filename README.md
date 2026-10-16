@@ -7,6 +7,7 @@
 > In this fork the upstream scripts are ported and benchmarked on **one Ascend 910C NPU (two dies)**. The goal is a comparable NPU result with auditable source, launch commands, environment metadata, logs and metrics. All algorithmic ideas, records and contributor credit belong to the upstream open-source project and are preserved in full below.
 >
 > - The table below is the main result of this repository.
+> - The `## Rules` section states what a new record must satisfy.
 > - Implementation sources and successful run logs live under `airbench_npu/`.
 > - Anything in the preserved upstream README that mentions CUDA / A100 / cuDNN / Triton / `torch.compile` / multi-GPU launch flags is kept for history and attribution only and does **not** describe the NPU runs.
 
@@ -70,6 +71,25 @@ For reference, the upstream GPU records this port is based on:
 | - | - | - | - |
 | upstream `airbench96_faster.py` | 96.00% | 27.3 s | 400W NVIDIA A100 |
 | upstream `airbench94_muon.py` | 94.01% | 2.59 s | 400W NVIDIA A100 |
+
+## Rules
+
+New records must:
+
+1. Reach ≥96.0% mean TTA accuracy on the CIFAR-10 test set, with the same test-time
+   augmentation as the listed rows (`tta_level=2`), on the hardware and runtime above.
+2. Keep the data streams unchanged: same CIFAR-10 split, same augmentation, same
+   hard-example selection, same 45-epoch schedule. Everything else — batch size and how it
+   is split across dies, parallelism, fusion, numerical format — is fair game.
+3. Report at least 20 complete trainings, each timed from model creation through the final
+   test-time augmentation with device synchronisation, and state which timing scope is used
+   (in particular whether the read-only per-epoch validation runs). Give mean, median, min,
+   max and sample std for latency and accuracy, with the logs. The wall clock of several
+   trainings running concurrently, divided by their count, is throughput — not a
+   single-training latency.
+4. Beat the prior record on the same hardware.
+
+Other than that, anything goes: NPU-specific optimisation is the point of this repository.
 
 ---
 
