@@ -6,3 +6,14 @@ upload.sh
 trash/
 logs/
 
+
+# NPU reproduction: keep the run logs the README links to
+!airbench_npu/*/logs/
+
+# NPU run byproducts (regenerated on every run)
+airbench_npu/**/kernel_meta/
+airbench_npu/**/fusion_result.json
+airbench_npu/**/.training.lock
+
+# local backup of the pre-existing launcher
+airbench_npu/**/run.sh.orig

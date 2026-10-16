@@ -1,3 +1,64 @@
+# CIFAR-10 Airbench · Ascend NPU Leaderboard
+
+> **This repository tracks NPU reproductions of the cifar10-airbench speedruns on one Ascend 910C NPU.**
+>
+> Forked from upstream [KellerJordan/cifar10-airbench](https://github.com/KellerJordan/cifar10-airbench) — the original project is the single-GPU CIFAR-10 speedrun: the fastest known training of a neural network to 94% / 96% accuracy on CIFAR-10 using one NVIDIA A100 GPU.
+>
+> In this fork the upstream scripts are ported and benchmarked on **one Ascend 910C NPU (two dies)**. The goal is a comparable NPU result with auditable source, launch commands, environment metadata, logs and metrics. All algorithmic ideas, records and contributor credit belong to the upstream open-source project and are preserved in full below.
+>
+> - The table below is the main result of this repository.
+> - Implementation sources and successful run logs live under `airbench_npu/`.
+> - Anything in the preserved upstream README that mentions CUDA / A100 / cuDNN / Triton / `torch.compile` / multi-GPU launch flags is kept for history and attribution only and does **not** describe the NPU runs.
+
+---
+
+## Runtime
+
+The NPU runs use a common reference runtime with one Ascend 910C NPU:
+
+| Field | Value |
+|---|---|
+| Python | `/SharePath/chenyupeng/cyp-testtest/llm_test_migrated/bin/python`, version `3.10.19` |
+| torch | `2.7.1+cpu` |
+| torch_npu | `2.7.1.post2` |
+| CANN | `8.5.0` |
+| Hardware | one Ascend 910C NPU (two dies) |
+| Process count | two processes, one per die |
+| Dataset | CIFAR-10, pre-cached as `train.pt` / `test.pt` under `airbench_npu/data/cifar10/` |
+
+An Ascend 910C NPU contains two dies, so training uses two processes, one per die;
+`--nproc_per_node=2` refers to that process count.
+
+Some logs report a PyTorch version such as `2.7.1+cpu`; in the Ascend build the `+cpu`
+suffix is the package build string and does not mean the run used CPU instead of NPU.
+
+The migrated Conda environment does not ship `torchvision`, so both launchers put
+`airbench_npu/runtime_dependencies` on `PYTHONPATH`. `airbench_npu/baseline/run.sh`
+and `airbench_npu/optimized/run.sh` each write exactly one log file,
+`logs/<timestamp>.log`, containing the complete training output.
+
+## NPU leaderboard
+
+The following table is the NPU reproduction leaderboard. For each row the source lives
+in the corresponding `airbench_npu/<implementation>/` directory and the run log lives in
+its `logs/` subdirectory.
+
+| # | Time | Accuracy (mean) | Description | Log |
+| - | - | - | - | - |
+| 1 | 75.88 s | 96.046% | upstream port, training algorithm unchanged | [log](airbench_npu/baseline/logs/20261016_134816_607999689.log) |
+| 2 | 32.66 s | 96.015% | **[optimized]** whole-batch BatchNorm after the layer-wise batch split, per-rank local loss, side-stream proxy overlap, single-reduction final max-pool | [log](airbench_npu/optimized/logs/20261016_180136_ddp.log) |
+
+For reference, the upstream GPU records this port is based on:
+
+| Script | Mean accuracy | Time | Hardware |
+| - | - | - | - |
+| upstream `airbench96_faster.py` | 96.00% | 27.3 s | 400W NVIDIA A100 |
+| upstream `airbench94_muon.py` | 94.01% | 2.59 s | 400W NVIDIA A100 |
+
+---
+
+## Below is the original upstream README (preserved for full attribution)
+
 # CIFAR-10 Airbench 💨
 
 This repo contains the two fastest known algorithms ([edit: not anymore](https://github.com/hiverge/cifar10-speedrun/tree/main)) for training a neural network to 94% or 96% accuracy on CIFAR-10 using a single NVIDIA A100 GPU.
