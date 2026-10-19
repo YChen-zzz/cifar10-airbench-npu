@@ -31,14 +31,12 @@ pids=()
 trap 'kill "${pids[@]}" 2>/dev/null || true; rm -rf "$tmp"' INT TERM EXIT
 printf 'version=baseline user=%s python=%s independent_training_processes=2 physical_npus=%s npu_count_used=2 total_runs=%s runs_per_npu=%s workers_per_npu=1 eval_every_epoch=1\n' \
   "$(id -un)" "$(command -v python)" "$AIRBENCH_DEVICES" "$total" "$AIRBENCH_RUNS" | tee "$log"
-started=$(date +%s%N)
 for device in "${devices[@]}"; do
   ASCEND_RT_VISIBLE_DEVICES="$device" python airbench96_faster_npu.py > "$tmp/device${device}.log" 2>&1 &
   pids+=("$!")
 done
 status=0
 for pid in "${pids[@]}"; do wait "$pid" || status=1; done
-ended=$(date +%s%N)
 
 {
   for device in "${devices[@]}"; do
@@ -46,10 +44,10 @@ ended=$(date +%s%N)
     cat "$tmp/device${device}.log"
   done
   printf '=== SUMMARY ===\n'
-  python - "$tmp" "$total" "$(( ended - started ))" "$status" "$AIRBENCH_RUNS" <<'PY'
+  python - "$tmp" "$total" "$status" "$AIRBENCH_RUNS" <<'PY'
 import sys, json, statistics
 from pathlib import Path
-tmp, expected, wall_ns, status, per_npu = Path(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
+tmp, expected, status, per_npu = Path(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
 accs, times = [], []
 for path in sorted(tmp.glob('device*.log')):
     for line in path.read_text(errors='ignore').splitlines():
@@ -58,8 +56,7 @@ for path in sorted(tmp.glob('device*.log')):
             accs.append(float(f[6])); times.append(float(f[7]))
 summary = dict(version='baseline', independent_training_processes=2, runs_per_npu=per_npu,
                expected_runs=expected, completed_runs=len(accs), exit_codes=[status],
-               npu_count_used=2, wall_elapsed_s=wall_ns / 1e9,
-               wall_throughput_s_per_training=wall_ns / 1e9 / expected if expected else None,
+               npu_count_used=2,
                accuracy_mean=statistics.mean(accs) if accs else None,
                accuracy_std=statistics.stdev(accs) if len(accs) > 1 else None,
                individual_official_time_mean_s=statistics.mean(times) if times else None)

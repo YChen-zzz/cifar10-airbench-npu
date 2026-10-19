@@ -1072,8 +1072,6 @@ Time per run - Mean: 75.88s    Std: 0.22s    Min: 75.75s    Max: 76.49s
     0
   ],
   "npu_count_used": 2,
-  "wall_elapsed_s": 856.61633618,
-  "wall_throughput_s_per_training": 42.830816809,
   "accuracy_mean": 0.96046,
   "accuracy_std": 0.0011310916943610967,
   "individual_official_time_mean_s": 75.835855

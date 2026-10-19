@@ -1007,7 +1007,8 @@ def run_training(args):
                    bn_semantics=('local BN per rank; dynamics changed' if os.environ.get('AIRBENCH_SYNCBN') == 'local'
                                  else 'global SyncBatchNorm') if DDP_MODE else 'native full-batch on primary', seed=args.seed,
                    records=records, accuracy_mean=statistics.mean(r['accuracy'] for r in records),
-                   single_training_wall_median_s=statistics.median(r['single_training_wall_s'] for r in records))
+                   official_time_measured_runs=len(records),
+                   official_time_mean_s=statistics.mean(r['official_training_region_s'] for r in records))
     if not DDP_MODE or dist.get_rank() == 0:
         Path(args.output).write_text(json.dumps(summary, indent=2)+'\n')
     print(json.dumps(summary, indent=2), flush=True)

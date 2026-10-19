@@ -38,13 +38,13 @@ Both launchers pin the `torchvision` build the runs used by putting it first on
 `PYTHONPATH`. The path is the `AIRBENCH_TORCHVISION_PATH` variable, defaulting to
 `/SharePath/chenyupeng/diff_model/cifar10-airbench/airbench_npu/runtime_dependencies`
 (`torchvision 0.22.1`); set it to use a different build.
-`airbench_npu/baseline/run.sh` and `airbench_npu/optimized/run.sh` each write exactly
+`airbench_npu/record01_kerminal_migration/run.sh` and `airbench_npu/record02_optimization_v1/run.sh` each write exactly
 one log file, `logs/<timestamp>.log`, containing the complete training output.
 
 Run the optimized build with:
 
 ```bash
-cd airbench_npu/optimized
+cd airbench_npu/record02_optimization_v1
 AIRBENCH_RUNS=20 bash run.sh
 ```
 
@@ -54,16 +54,18 @@ IDs, default `0,1`), `AIRBENCH_SYNCBN` (BatchNorm mode, default `local`),
 `AIRBENCH_DATA_PATH` and `AIRBENCH_TORCHVISION_PATH`. One run of this launcher writes a
 single `logs/<timestamp>.log`.
 
-## NPU leaderboard
+## NPU leaderboard record history
 
-The following table is the NPU reproduction leaderboard. For each row the source lives
-in the corresponding `airbench_npu/<implementation>/` directory and the run log lives in
-its `logs/` subdirectory.
+The following table is the NPU leaderboard record history, sorted by
+`official_time_mean_s` from slowest to fastest. For each row the source lives in the
+corresponding `airbench_npu/<record>/` directory and the run log lives in its
+`logs/` subdirectory.
 
-| # | Time | Accuracy (mean) | Description | Log |
-| - | - | - | - | - |
-| 1 | 75.88 s | 96.046% | upstream port, training algorithm unchanged | [log](airbench_npu/baseline/logs/20261016_134816_607999689.log) |
-| 2 | 32.66 s | 96.015% | **[optimized]** whole-batch BatchNorm after the layer-wise batch split, per-rank local loss, side-stream proxy overlap, single-reduction final max-pool | [log](airbench_npu/optimized/logs/20261016_180136_ddp.log) |
+| # | Record | Time (official mean) | Accuracy (mean) | Description | Log |
+| - | - | - | - | - | - |
+| 1 | `record01_kerminal_migration` | 75.88 s | 96.046% | **[baseline]** upstream port, training algorithm unchanged | [log](airbench_npu/record01_kerminal_migration/logs/20261016_134816_607999689.log) |
+| 2 | `record03_optimization_v2` | 34.14 s | 96.083% | **[optimized_v1]** two-rank local-BN DDP, compiled proxy and eval, streamed proxy masks | [log](airbench_npu/record03_optimization_v2/logs/nogit_optimized_v1_acc20_20261019_172959.log) |
+| 3 | `record02_optimization_v1` | 32.76 s | 96.015% | **[optimized]** per-rank local BatchNorm after the layer-wise batch split, per-rank local loss, side-stream proxy overlap, single-reduction final max-pool | [log](airbench_npu/record02_optimization_v1/logs/20261016_180136_ddp.log) |
 
 For reference, the upstream GPU records this port is based on:
 
